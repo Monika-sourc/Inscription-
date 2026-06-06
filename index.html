@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription FinanceExpress</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #1e1b4b; 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            padding: 20px;
+        }
+        .box { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            width: 100%; 
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 { text-align: center; color: #1e1b4b; margin-bottom: 10px; }
+        p { text-align: center; color: #64748b; margin-bottom: 25px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #374151; }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #e5e7eb; 
+            border-radius: 8px; 
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        input:focus { border-color: #4f46e5; outline: none; }
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            background: #fbbf24; 
+            color: #1e1b4b; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer;
+        }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        .msg { padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; display: none; }
+        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>FinanceExpress</h1>
+        <p>Crée ton compte en 30 secondes</p>
+        
+        <label>Email Gmail *</label>
+        <input type="email" id="email" placeholder="tonemail@gmail.com" required>
+        
+        <label>Mot de passe *</label>
+        <input type="password" id="password" placeholder="Min 6 caractères" minlength="6" required>
+        
+        <button id="btn" onclick="inscrire()">S'inscrire et recevoir l'email</button>
+        <div id="message" class="msg"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+
+        // TA CONFIG FIREBASE V2 - DÉJÀ VÉRIFIÉE ✅
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJs7TJZuE1T-DaoHV0U9JDB0UKKuGbSr4",
+            authDomain: "finance-express-v2-77e21.firebaseapp.com",
+            projectId: "finance-express-v2-77e21",
+            storageBucket: "finance-express-v2-77e21.firebasestorage.app",
+            messagingSenderId: "61877127775",
+            appId: "1:61877127775:web:e70ca72e576c22a0fa69ea"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.inscrire = async function() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btn');
+            const msg = document.getElementById('message');
+
+            msg.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = "Création du compte...";
+
+            if (!email.includes('@') || password.length < 6) {
+                msg.textContent = "Email invalide ou mot de passe trop court";
+                msg.className = "msg error";
+                msg.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "S'inscrire et recevoir l'email";
+                return;
+            }
+
+            try {
+                const userCred = await createUserWithEmailAndPassword(auth, email, password);
+                await sendEmailVerification(userCred.user);
+                
+                msg.innerHTML = "✅ <strong>Email envoyé !</strong><br>Vérifie ta boîte mail et tes spams.";
+                msg.className = "msg success";
+                msg.style.display = "block";
+                btn.textContent = "Vérifie ton email";
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+                
+            } catch (error) {
+                let txt = "Erreur: ";
+                if (error.code === 'auth/email-already-in-use') txt = "Cet email est déjà utilisé";
+                else if (error.code === 'auth/invalid-email') txt = "Email invalide";
+                else if (error.code === 'auth/weak-password') txt = "Mot de passe trop faible : min 6 caractères";
+                else if (error.code === 'auth/api-key-not-valid') txt = "Clé API invalide - Contacte l'admin";
+                else txt += error.code;
+                
+                msg.textContent = txt;
+                msg.className = "msg error";
+                msg.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "S'inscrire et recevoir l'email";
+            }
+        }
+    </script>
+</body>
+</html>
