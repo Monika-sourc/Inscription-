@@ -3,132 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription FinanceExpress</title>
+    <title>Inscription - FinanceExpress</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: Arial, sans-serif; 
-            background: #1e1b4b; 
-            min-height: 100vh; 
-            display: flex; 
-            align-items: center; 
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
             justify-content: center;
             padding: 20px;
         }
-        .box { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 15px; 
-            width: 100%; 
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 100%;
         }
-        h1 { text-align: center; color: #1e1b4b; margin-bottom: 10px; }
-        p { text-align: center; color: #64748b; margin-bottom: 25px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #374151; }
-        input { 
-            width: 100%; 
-            padding: 12px; 
-            border: 2px solid #e5e7eb; 
-            border-radius: 8px; 
-            margin-bottom: 20px;
+        h1 { color: #1e1b4b; margin-bottom: 10px; text-align: center; }
+        p { color: #64748b; text-align: center; margin-bottom: 30px; }
+        input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
             font-size: 16px;
         }
-        input:focus { border-color: #4f46e5; outline: none; }
-        button { 
-            width: 100%; 
-            padding: 14px; 
-            background: #fbbf24; 
-            color: #1e1b4b; 
-            border: none; 
-            border-radius: 8px; 
-            font-size: 16px; 
-            font-weight: bold; 
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #fbbf24;
+            color: #1e1b4b;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
         }
-        button:disabled { background: #9ca3af; cursor: not-allowed; }
-        .msg { padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; display: none; }
-        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        .success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        button:hover { background: #f59e0b; }
+        button:disabled { background: #94a3b8; cursor: not-allowed; }
+        .error { color: #dc2626; font-size: 14px; margin-top: 10px; text-align: center; }
+        .success { color: #16a34a; font-size: 14px; margin-top: 10px; text-align: center; }
+        
+        /* PARTIE CONNECTÉE - CACHÉE PAR DÉFAUT */
+        #dashboard {
+            display: none;
+            text-align: center;
+        }
+        #dashboard h2 { color: #16a34a; margin-bottom: 20px; }
+        .logout { background: #dc2626; color: white; margin-top: 20px; }
+        .logout:hover { background: #b91c1c; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h1>FinanceExpress</h1>
-        <p>Crée ton compte en 30 secondes</p>
+    <div class="container">
         
-        <label>Email Gmail *</label>
-        <input type="email" id="email" placeholder="tonemail@gmail.com" required>
-        
-        <label>Mot de passe *</label>
-        <input type="password" id="password" placeholder="Min 6 caractères" minlength="6" required>
-        
-        <button id="btn" onclick="inscrire()">S'inscrire et recevoir l'email</button>
-        <div id="message" class="msg"></div>
+        <!-- PARTIE 1 : FORMULAIRE D'INSCRIPTION -->
+        <div id="signupForm">
+            <h1>Créer un compte</h1>
+            <p>Rejoignez FinanceExpress en 30 secondes</p>
+            
+            <input type="email" id="email" placeholder="Votre email" required>
+            <input type="password" id="password" placeholder="Mot de passe (6 caractères min)" required>
+            <button id="signupBtn">S'inscrire</button>
+            
+            <div id="message"></div>
+            
+            <p style="font-size: 12px; color: #64748b; margin-top: 15px;">
+                Vous recevrez un email de vérification de Google Firebase.
+            </p>
+        </div>
+
+        <!-- PARTIE 2 : DASHBOARD APRÈS CONNEXION -->
+        <div id="dashboard">
+            <h2>✅ Vous êtes connecté !</h2>
+            <p>Bienvenue <strong id="userEmail"></strong></p>
+            <p style="margin: 20px 0;">Votre compte est actif. Vous pouvez maintenant faire une demande de prêt.</p>
+            <button onclick="window.location.href='demande-pret.html'">Faire une demande</button>
+            <button class="logout" id="logoutBtn">Se déconnecter</button>
+        </div>
+
     </div>
 
+    <!-- FIREBASE -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // TA CONFIG FIREBASE V2 - DÉJÀ VÉRIFIÉE ✅
+        // TA CONFIG FIREBASE ICI
         const firebaseConfig = {
-            apiKey: "AIzaSyBJs7TJZuE1T-DaoHV0U9JDB0UKKuGbSr4",
+            apiKey: "AIzaSyC_JmwDkBxZ0DFBXfMO57cFcOFeLXZwcx8",
             authDomain: "finance-express-v2-77e21.firebaseapp.com",
             projectId: "finance-express-v2-77e21",
             storageBucket: "finance-express-v2-77e21.firebasestorage.app",
             messagingSenderId: "61877127775",
-            appId: "1:61877127775:web:e70ca72e576c22a0fa69ea"
+            appId: "1:61877127775:web:c89282a132367ba76eab37"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        window.inscrire = async function() {
-            const email = document.getElementById('email').value.trim();
+        const signupForm = document.getElementById('signupForm');
+        const dashboard = document.getElementById('dashboard');
+        const signupBtn = document.getElementById('signupBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const message = document.getElementById('message');
+        const userEmail = document.getElementById('userEmail');
+
+        // 1. INSCRIPTION
+        signupBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const btn = document.getElementById('btn');
-            const msg = document.getElementById('message');
-
-            msg.style.display = 'none';
-            btn.disabled = true;
-            btn.textContent = "Création du compte...";
-
-            if (!email.includes('@') || password.length < 6) {
-                msg.textContent = "Email invalide ou mot de passe trop court";
-                msg.className = "msg error";
-                msg.style.display = "block";
-                btn.disabled = false;
-                btn.textContent = "S'inscrire et recevoir l'email";
-                return;
-            }
+            
+            signupBtn.disabled = true;
+            signupBtn.textContent = 'Inscription...';
+            message.textContent = '';
 
             try {
-                const userCred = await createUserWithEmailAndPassword(auth, email, password);
-                await sendEmailVerification(userCred.user);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await sendEmailVerification(userCredential.user);
                 
-                msg.innerHTML = "✅ <strong>Email envoyé !</strong><br>Vérifie ta boîte mail et tes spams.";
-                msg.className = "msg success";
-                msg.style.display = "block";
-                btn.textContent = "Vérifie ton email";
-                document.getElementById('email').value = '';
-                document.getElementById('password').value = '';
+                message.className = 'success';
+                message.textContent = 'Compte créé ! Vérifiez votre email.';
+                
+                // Firebase connecte automatiquement l'user après inscription
+                // onAuthStateChanged va s'occuper d'afficher le dashboard
                 
             } catch (error) {
-                let txt = "Erreur: ";
-                if (error.code === 'auth/email-already-in-use') txt = "Cet email est déjà utilisé";
-                else if (error.code === 'auth/invalid-email') txt = "Email invalide";
-                else if (error.code === 'auth/weak-password') txt = "Mot de passe trop faible : min 6 caractères";
-                else if (error.code === 'auth/api-key-not-valid') txt = "Clé API invalide - Contacte l'admin";
-                else txt += error.code;
-                
-                msg.textContent = txt;
-                msg.className = "msg error";
-                msg.style.display = "block";
-                btn.disabled = false;
-                btn.textContent = "S'inscrire et recevoir l'email";
+                message.className = 'error';
+                if (error.code === 'auth/email-already-in-use') {
+                    message.textContent = 'Cet email est déjà utilisé. Connectez-vous.';
+                } else if (error.code === 'auth/weak-password') {
+                    message.textContent = 'Mot de passe trop faible. 6 caractères min.';
+                } else {
+                    message.textContent = 'Erreur : ' + error.message;
+                }
+                signupBtn.disabled = false;
+                signupBtn.textContent = "S'inscrire";
             }
-        }
+        });
+
+        // 2. DÉTECTE SI L'USER EST CONNECTÉ OU PAS
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // USER CONNECTÉ → ON CACHE LE FORMULAIRE, ON MONTRE LE DASHBOARD
+                signupForm.style.display = 'none';
+                dashboard.style.display = 'block';
+                userEmail.textContent = user.email;
+            } else {
+                // USER PAS CONNECTÉ → ON MONTRE LE FORMULAIRE
+                signupForm.style.display = 'block';
+                dashboard.style.display = 'none';
+            }
+        });
+
+        // 3. DÉCONNEXION
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
     </script>
 </body>
 </html>
